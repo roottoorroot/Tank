@@ -6,6 +6,9 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
@@ -18,11 +21,12 @@ public abstract class Display {
     private static int[] bufferData; //В этот массив мы запихаем наше изображение;
     private static Graphics bufferGraphics; //Для рисования и отображения получившихся картинок;
     private static int clearColor; //Цвет для закрашивания; нашего поля;
+    private static BufferStrategy bufferStrategy; //Для мультибуфферизации;
     //temp
     private static float delta = 0; //Для тестирования движения;
     //temp end
     
-    public static void create(int width, int height, String title, int _clearColor){
+    public static void create(int width, int height, String title, int _clearColor, int numBuffers){
         //Если окно уже создано, не зоздаём еще одно, завершаем функцию;
         if(created){ 
             return;
@@ -42,7 +46,12 @@ public abstract class Display {
         buffer = new BufferedImage(width, height,BufferedImage.TYPE_INT_ARGB); //Для хранения цвета выбираем тип: TYPE_INT_ARGB;
         bufferData = ((DataBufferInt)buffer.getRaster().getDataBuffer()).getData(); //Данна конструкция нужна для перехвата массива с цветами и дальнейшего издевательства с ним;
         bufferGraphics = buffer.getGraphics(); //Достаем все параметры и цвета и распооложение;
+        ((Graphics2D)bufferGraphics).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); //Включаем сглаживание и наш объект уже так не выделяется на фоне;
         clearColor = _clearColor; //Инициализируем цвет заполнения;
+        
+        content.createBufferStrategy(numBuffers); //Для мультибуфферизации;
+        bufferStrategy = content.getBufferStrategy();
+        
         
         created = true;
     }
@@ -51,17 +60,22 @@ public abstract class Display {
         Arrays.fill(bufferData,clearColor); //Функция заполняет весь переданный ей массив выбранным значением, в нашем случае, это цвет clearColor;
     }
     
-    public static void render(){
-        bufferGraphics.setColor(new Color(0xff0000ff)); //Задаем цвет объекта, который хотим передать;
-        bufferGraphics.fillOval((int)(350 + Math.sin(delta) * 200), 250, 100, 100); //Рисуем круг;
-        
-        delta += 0.02f; //Для движения Шарика;
-    }
-    
     public static void swapBuffers(){
-        Graphics g = content.getGraphics(); //Вытаскиваем всё то что есть у нас сейчас в Канвасе через контент;
+        Graphics g = bufferStrategy.getDrawGraphics(); //Вытаскиваем всё то что есть у нас сейчас в Канвасе через контент;
+        bufferStrategy.show();
         g.drawImage(buffer, 0, 0, null); //Запихиваем в графикс текущий объект в буфере: Шарик;
     }
     
+    public static Graphics2D getGraphics(){
+        return (Graphics2D)bufferGraphics;
+    }
     
+    public static void distroy(){
+        if(!created) return;
+        window.dispose();
+    }
+    
+    public static void setTitle(String title){
+        window.setTitle(title);
+    }
 }
