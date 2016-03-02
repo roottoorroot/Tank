@@ -1,6 +1,7 @@
 package com.thebyteguru.display;
 
 import com.sun.java.swing.plaf.windows.resources.windows;
+import com.thebyteguru.io.Input;
 import javax.swing.JFrame;
 import java.awt.Canvas;
 import java.awt.Color;
@@ -22,7 +23,10 @@ public abstract class Display {
     private static Graphics bufferGraphics; //Для рисования и отображения получившихся картинок;
     private static int clearColor; //Цвет для закрашивания; нашего поля;
     private static BufferStrategy bufferStrategy; //Для мультибуфферизации;
-    //temp
+    
+    
+
+//temp
     private static float delta = 0; //Для тестирования движения;
     //temp end
     
@@ -76,6 +80,10 @@ public abstract class Display {
     }
     
     public static void setTitle(String title){
-        window.setTitle(title);
+        window.setTitle(title); //Отдаём титл окна;
+    }
+    
+    public static void addInputListener(Input inputListener){
+        window.add(inputListener);
     }
 }

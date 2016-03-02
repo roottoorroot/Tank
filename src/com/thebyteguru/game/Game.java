@@ -2,7 +2,15 @@
 package com.thebyteguru.game;
 
 import com.thebyteguru.display.Display;
+import com.thebyteguru.io.Input;
 import com.thebyteguru.utils.Time;
+import graphics.Sprite;
+import graphics.SpriteSheet;
+import graphics.TextureAtlas;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints.Key;
+import java.awt.event.KeyEvent;
 
 
 public class Game implements Runnable{
@@ -15,13 +23,36 @@ public class Game implements Runnable{
     public static final float UPDATE_RATE = 60.0f; //Сколько обновлений в секунду будет производиться;
     public static final float UPDATE_INTERVAL = Time.SECOND/UPDATE_RATE; //Сколько времени будет проходить между обновлениями;
     public static final long IDLE_TIME = 1; //Для остановки процесса, чтобы другие процессы тоже могли действовать, а не спать;
+    public static final String ATLAS_FILE_NAME = "Texture_atlas.png";
     
-    private boolean running; //Состояние игры;
-    private Thread gameThread; //Процесс (новый поток) игры;
+    private boolean         running; //Состояние игры;
+    private Thread          gameThread; //Процесс (новый поток) игры;
+    private Graphics2D      graphics; //Чтобы рисовать объекты;
+    private Input           input; //Управление объектами, точнее считывание нажатия клавиш;
+    private TextureAtlas    atlas; //Класс для работы с загруженной картой изображений;
+    private SpriteSheet     sheet; //Для работы со спрайтами;
+    private Sprite         sprite; //Для работы со спрайтами;
+    
+    
+    //temp;
+        float   speed   = 3; //Временное изменеие скорости;
+        float   x       = 350;
+        float   y       = 250;
+        float   radius  = 50;
+        float   delta   = 0;
+    //temp end;
     
     public Game(){
         running = false;
         Display.create(WIDTH, HEIGHT, TITLE, CLEAR_COLOR, NUM_BUFFERS);
+        graphics = Display.getGraphics();
+        input = new Input();
+        Display.addInputListener(input); //Передаём нажаные клавиши;
+        atlas = new TextureAtlas(ATLAS_FILE_NAME); //Для загрузки нужного изображения атлас_мап;
+        sheet = new SpriteSheet(atlas.cut(1*16, 9*16, 16*2, 16),2,16); //Вырезаем спрайт из картинки Атлас_мап на позиции 8 и 5, с размерами 16;
+        sprite = new Sprite(sheet,1); //У нас теперь есть для вывода сформированный спрайт, с зумом 1, то есть не увеличенный;
+        
+        
     }
     
     public synchronized void start(){
@@ -48,9 +79,9 @@ public class Game implements Runnable{
     }
     
     public void run(){
-        int fps = 0;
-        int upd = 0;
-        int updl = 0;
+        int fps = 0; //ФПС 
+        int upd = 0; //Кол-во обновлений;
+        int updl = 0; //Кол-во пропущенных обновлений;
         
       
         float delta = 0; //Количество апдэйтов, которые делаются;
@@ -69,7 +100,7 @@ public class Game implements Runnable{
             while(delta > 1){
                 update();
                 upd++;
-                if(render){
+                if(render){ //Если рендер уже был, тогда увеличиваем updl на еденицу, этим мы покажем, что игра запаздывает;
                     updl++;
                 }else{
                     render = true;
@@ -77,7 +108,7 @@ public class Game implements Runnable{
                 delta--;
             }
             
-            if(render){
+            if(render){ //Если были изменения, рисуем их;
                 render();
                 fps++;
             }else{
@@ -88,7 +119,7 @@ public class Game implements Runnable{
                 }
             }
             
-            if(count >= Time.SECOND){
+            if(count >= Time.SECOND){ //Когда прошла одна секунда нашего времени, нужно отрисовать титл и вывести всю инфу;
                 Display.setTitle(TITLE + " |FPS: " + fps + " |UPD :" + upd + " |UPDL: " + updl);
                 upd = 0;
                 fps = 0;
@@ -102,10 +133,31 @@ public class Game implements Runnable{
     }
     
     private void update(){
+        if(input.getKey(KeyEvent.VK_UP))
+            y -= speed;
+        
+        
+        if(input.getKey(KeyEvent.VK_DOWN))
+            y += speed;
+        
+        
+        if(input.getKey(KeyEvent.VK_LEFT))
+            x -= speed;
+        
+        
+        if(input.getKey(KeyEvent.VK_RIGHT))
+            x += speed;
         
     }
     
     private void render(){
+        Display.clear();
+        sprite.render(graphics, x, y);
+        //graphics.setColor(Color.white);
+        //graphics.drawImage(atlas.cut(0,0,32,32),300,300,null);
+        //graphics.fillOval((int)(x + (Math.sin(delta)*200)), (int)y, (int)(radius * 2), (int)(radius * 2));
+        //delta += 0.02f;
+        Display.swapBuffers();
         
     }
     
