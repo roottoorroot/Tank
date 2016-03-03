@@ -30,17 +30,9 @@ public class Game implements Runnable{
     private Graphics2D      graphics; //Чтобы рисовать объекты;
     private Input           input; //Управление объектами, точнее считывание нажатия клавиш;
     private TextureAtlas    atlas; //Класс для работы с загруженной картой изображений;
-    private SpriteSheet     sheet; //Для работы со спрайтами;
-    private Sprite         sprite; //Для работы со спрайтами;
+    private Player          player;
     
-    
-    //temp;
-        float   speed   = 3; //Временное изменеие скорости;
-        float   x       = 350;
-        float   y       = 250;
-        float   radius  = 50;
-        float   delta   = 0;
-    //temp end;
+ 
     
     public Game(){
         running = false;
@@ -49,8 +41,8 @@ public class Game implements Runnable{
         input = new Input();
         Display.addInputListener(input); //Передаём нажаные клавиши;
         atlas = new TextureAtlas(ATLAS_FILE_NAME); //Для загрузки нужного изображения атлас_мап;
-        sheet = new SpriteSheet(atlas.cut(1*16, 9*16, 16*2, 16),2,16); //Вырезаем спрайт из картинки Атлас_мап на позиции 8 и 5, с размерами 16;
-        sprite = new Sprite(sheet,1); //У нас теперь есть для вывода сформированный спрайт, с зумом 1, то есть не увеличенный;
+        player = new Player(300,300,2,3,atlas);
+       
         
         
     }
@@ -133,30 +125,12 @@ public class Game implements Runnable{
     }
     
     private void update(){
-        if(input.getKey(KeyEvent.VK_UP))
-            y -= speed;
-        
-        
-        if(input.getKey(KeyEvent.VK_DOWN))
-            y += speed;
-        
-        
-        if(input.getKey(KeyEvent.VK_LEFT))
-            x -= speed;
-        
-        
-        if(input.getKey(KeyEvent.VK_RIGHT))
-            x += speed;
-        
+        player.update(input);
     }
     
     private void render(){
         Display.clear();
-        sprite.render(graphics, x, y);
-        //graphics.setColor(Color.white);
-        //graphics.drawImage(atlas.cut(0,0,32,32),300,300,null);
-        //graphics.fillOval((int)(x + (Math.sin(delta)*200)), (int)y, (int)(radius * 2), (int)(radius * 2));
-        //delta += 0.02f;
+        player.render(graphics);
         Display.swapBuffers();
         
     }
